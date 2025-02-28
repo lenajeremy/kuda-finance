@@ -16,5 +16,5 @@ FROM ubuntu as builder
 RUN apt-get update && apt-get install -y file tree ca-certificates && rm -rf /var/lib/apt/lists/*
 WORKDIR /root
 COPY --from=go-builder /app/app .
-COPY --from=go-builder /app/.env .
+# COPY --from=go-builder /app/.env .
 CMD ["./app"]
