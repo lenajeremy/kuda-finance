@@ -12,19 +12,14 @@ type Conn struct {
 	driver neo4j.DriverWithContext
 }
 
-// func init() {
-// 	err := godotenv.Load()
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// }
-
 func NewGraphConn() (*Conn, error) {
 	var (
-		Neo4jUrl  = os.Getenv("NEO4J_URI")
-		Neo4jUser = os.Getenv("NEO4J_USER")
-		Neo4jPass = os.Getenv("NEO4J_PASSWORD")
+		Neo4jUrl  = os.Getenv("GO_NEO4J_URI")
+		Neo4jUser = os.Getenv("GO_NEO4J_USER")
+		Neo4jPass = os.Getenv("GO_NEO4J_PASSWORD")
 	)
+
+	fmt.Println(Neo4jUrl, Neo4jUser, Neo4jPass)
 
 	driver, err := neo4j.NewDriverWithContext(
 		Neo4jUrl,
