@@ -9,7 +9,7 @@
 
 form {
   position: relative;
-  max-width: 768px;
+  max-width: 1024px;
   margin: auto;
   width: 100%;
   padding: 4rem;
@@ -24,6 +24,7 @@ form {
 
   @media screen and (max-width: 600px) {
     padding: 1rem;
+    padding-bottom: 7rem;
   }
 }
 
@@ -39,7 +40,12 @@ form {
   position: absolute;
 
   width: calc(100% - 8rem);
-  bottom: 0;
+  bottom: 0rem;
+
+  @media screen and (max-width: 600px) {
+    width: calc(100% - 2rem);
+    bottom: 1rem;
+  }
 
   textarea {
     background-color: rgb(81, 81, 81);

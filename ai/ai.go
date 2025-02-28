@@ -416,11 +416,8 @@ func (ai *AI) Respond(query string, rec []*neo4j.Record, prevMessages []db.Messa
 				Role: string(message.Role),
 			})
 		}
-		slog.Debug("history", "history", history)
 		cs.History = history
 	}
-
-	slog.Debug("conversation history", "data", len(cs.History))
 
 	recordString := ""
 	for _, r := range rec {
@@ -444,13 +441,6 @@ func (ai *AI) Respond(query string, rec []*neo4j.Record, prevMessages []db.Messa
 
 	res := cs.SendMessageStream(context.Background(), genai.Text(query))
 	return res
-
-	// response, ok := res.Candidates[0].Content.Parts[0].(genai.Text)
-	// if !ok {
-	// 	return "", fmt.Errorf("error getting chat completion: %v", err)
-	// }
-
-	// return strings.TrimSpace(string(response)), nil
 }
 
 func (ai *AI) Close() error {

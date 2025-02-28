@@ -1,22 +1,57 @@
 import { useEffect, useRef, useState } from "react";
+import Markdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { v4 } from "uuid";
+
 import "./App.css";
 
-function App() {
-  useEffect(() => {
-    fetch("/api/health")
-      .then((d) => d.json())
-      .then((d) => console.log(d));
-  }, []);
+function Message({ content }: { content: string }) {
+  return (
+    <Markdown
+      components={{
+        ol({ style, ...rest }) {
+          return (
+            <ol {...rest} style={{ ...style, listStylePosition: "inside" }} />
+          );
+        },
+        ul({ style, ...rest }) {
+          return (
+            <ul {...rest} style={{ ...style, listStylePosition: "inside" }} />
+          );
+        },
+      }}
+      remarkPlugins={[remarkGfm]}
+    >
+      {content}
+    </Markdown>
+  );
+}
 
+function getConv(): string {
+  const parts = location.pathname.slice(1).split("/");
+  return parts[parts.length - 1];
+}
+
+function App() {
   const [input, setInput] = useState("");
-  const conversationId = "8a715726-a484-4af9-ace5-57d0e8eec1b2";
+  const conversationId = getConv();
   const [messages, setMessages] = useState<
-    { message: string; sender: "user" | "model" }[]
+    { content: string; role: "user" | "model"; id: string }[]
   >([]);
-  const [mode, setMode] = useState<"chat" | "upload">("chat");
+  const [mode, setMode] = useState<"chat" | "upload" | "home">(
+    getConv() ? "chat" : "home"
+  );
   const [stream, setStream] = useState("");
   const [loading, setLoading] = useState(false);
   const currentStreamValue = useRef("");
+
+  useEffect(() => {
+    fetch("/api/chat/" + conversationId)
+      .then((d) => d.json())
+      .then((d) => {
+        setMessages(d.data);
+      });
+  }, [conversationId, mode]);
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -24,7 +59,10 @@ function App() {
     if (!input.trim()) {
       return;
     }
-    setMessages((prev) => [...prev, { message: input, sender: "user" }]);
+    setMessages((prev) => [
+      ...prev,
+      { content: input, role: "user", id: v4() },
+    ]);
     const es = new EventSource(
       "/api/chat?query=" + input + "&conversationId=" + conversationId
     );
@@ -36,15 +74,14 @@ function App() {
         e.data.length - 1
       );
       setStream(currentStreamValue.current);
-      console.log(currentStreamValue.current);
     });
 
     es.addEventListener("end", () => {
       setLoading(false);
-      console.log("end", currentStreamValue);
       const n = {
-        message: currentStreamValue.current,
-        sender: "model" as "user" | "model",
+        content: currentStreamValue.current,
+        role: "model" as "user" | "model",
+        id: v4(),
       };
 
       setMessages((prev) => [...prev, n]);
@@ -57,6 +94,27 @@ function App() {
       setLoading(false);
     });
   };
+
+  const handleStart = async () => {
+    let conversationId = localStorage.getItem("lastConversation");
+    if (!conversationId) {
+      const res = await fetch("/api/chat/new", { method: "POST" });
+      const data = await res.json();
+      conversationId = data.conversation.id as string;
+      localStorage.setItem("lastConversation", conversationId);
+    }
+
+    location.href = `/conversation/${conversationId}`;
+  };
+
+  if (mode === "home") {
+    return (
+      <div style={{ textAlign: "center" }}>
+        <p>Welcome</p>
+        <button onClick={handleStart}>Start</button>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -85,22 +143,27 @@ function App() {
           }}
         >
           <div
-            style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "0.5rem",
+              overflowY: "scroll",
+            }}
           >
-            {messages.map((m, i) => (
+            {messages.map((m) => (
               <div
-                key={i}
+                key={m.id}
                 style={{
                   padding: "0.75rem 1rem",
-                  background: m.sender === "model" ? "#363636" : "black",
+                  background: m.role === "model" ? "#363636" : "black",
                   borderRadius: "2rem",
                   width: "fit-content",
                   whiteSpace: "pre-line",
                   maxWidth: "85%",
-                  [m.sender === "model" ? "marginRight" : "marginLeft"]: "auto",
+                  [m.role === "model" ? "marginRight" : "marginLeft"]: "auto",
                 }}
               >
-                {m.message}
+                <Message content={m.content} />
               </div>
             ))}
             {stream && (

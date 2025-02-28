@@ -6,12 +6,15 @@ import (
 	"awesomeProject/graph"
 	"context"
 	"embed"
+	"errors"
 	"fmt"
 	"io"
 	"io/fs"
+	"log"
 	"log/slog"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -67,7 +70,8 @@ func main() {
 	})
 
 	r.NoRoute(func(c *gin.Context) {
-		if allowedURLs[c.FullPath()] {
+		log.Println(c.Request.URL.Path)
+		if allowedURLs[c.Request.URL.Path] || strings.HasPrefix(c.Request.URL.Path, "/conversation") {
 			c.FileFromFS("/", httpFs)
 			return
 		}
@@ -107,6 +111,28 @@ func main() {
 
 	api.GET("/health", func(c *gin.Context) {
 		c.String(200, "OK")
+	})
+
+	api.GET("/chat/:chat-id", func(c *gin.Context) {
+		conversationId := c.Param("chat-id")
+		if conversationId == "" {
+			c.JSON(400, gin.H{"error": "invalid conversation"})
+			return
+		}
+
+		var messages []*db.Message
+		tx := sqlite.Find(&messages, "conversation_id = ?", conversationId).Order("created_at ASC")
+
+		if err != nil {
+			if errors.Is(tx.Error, gorm.ErrRecordNotFound) || tx.RowsAffected == 0 {
+				c.JSON(http.StatusNotFound, gin.H{"error": "conversation with id not found"})
+			} else {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error: failed to retrieve conversation"})
+			}
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"error": nil, "data": messages, "count": len(messages)})
 	})
 
 	api.POST("/upload", func(c *gin.Context) {

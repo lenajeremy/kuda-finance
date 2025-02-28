@@ -28,13 +28,13 @@ const (
 
 type Message struct {
 	BaseModel
-	Content        string    `json:"content" gorm:"content"`
-	Role           UserRole  `json:"role" gorm:"role"`
-	ConversationId uuid.UUID `gorm:"conversationId"`
-	Conversation   Conversation
+	Content        string       `json:"content" gorm:"content"`
+	Role           UserRole     `json:"role" gorm:"role"`
+	ConversationId uuid.UUID    `gorm:"conversationId" json:"conversationId"`
+	Conversation   Conversation `json:"-"`
 }
 
 type Conversation struct {
 	BaseModel
-	Messages []Message
+	Messages []Message `json:"messages"`
 }
