@@ -1,7 +1,7 @@
 FROM node:20 AS frontend-builder
 WORKDIR /frontend
 COPY frontend .
-RUN yarn install && yarn build
+RUN npm install && npm build
 
 FROM golang:latest AS go-builder
 WORKDIR /app
