@@ -217,7 +217,7 @@ function App() {
         <form
           method="POST"
           encType="multipart/form-data"
-          action={"http://localhost:8080/api/upload"}
+          action={"/api/upload"}
         >
           <input type="file" name="statementDoc" />
           <button type="submit">SUBMIT</button>
