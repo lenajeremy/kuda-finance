@@ -360,6 +360,11 @@ func (ai *AI) GenerateCypher(query string) (string, error) {
 	if the user's query is unrelated to transactions or their account details. you should return:
 	match (c:Category{name:"empty"})
 	return c
+
+	<Important>
+	DO NOT TRY TO HOLD A CONVERSATION, RESPOND USING SENTENSE. YOUR ONLY RESPONSE SHOULD BE VALID CYPHER QUERIES.
+	YOU'D BE PENALIZED IF YOU DO ANYTHING OTHER THAN THIS.
+	</Important>
 	`
 	model := ai.GenerativeModel("gemini-2.0-pro-exp")
 	cs := model.StartChat()
