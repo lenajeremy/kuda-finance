@@ -19,7 +19,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/generative-ai-go/genai"
-	"github.com/joho/godotenv"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"gorm.io/gorm"
 )
@@ -28,13 +27,13 @@ import (
 var embeddedFiles embed.FS
 
 func init() {
-	if err := godotenv.Load(); err != nil {
-		panic("failed to load env")
-	}
+	// if err := godotenv.Load(); err != nil {
+	// 	panic("failed to load env")
+	// }
 
 	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
 		AddSource: true,
-		Level: slog.LevelDebug,
+		Level:     slog.LevelDebug,
 	}))
 	slog.SetDefault(logger)
 }
