@@ -64,7 +64,10 @@ function App() {
       { content: input, role: "user", id: v4() },
     ]);
     const es = new EventSource(
-      "/api/chat?query=" + input + "&conversationId=" + conversationId
+      "/api/chat?query=" +
+        encodeURIComponent(input) +
+        "&conversationId=" +
+        conversationId
     );
 
     es.addEventListener("message", (e) => {
@@ -94,6 +97,16 @@ function App() {
       setLoading(false);
     });
   };
+
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (containerRef.current) {
+      containerRef.current
+        .querySelector(".invisible-message")
+        ?.scrollIntoView();
+    }
+  }, [messages]);
 
   const handleStart = async () => {
     let conversationId = localStorage.getItem("lastConversation");
@@ -148,7 +161,9 @@ function App() {
               flexDirection: "column",
               gap: "0.5rem",
               overflowY: "scroll",
+              scrollBehavior: "smooth",
             }}
+            ref={containerRef}
           >
             {messages.map((m) => (
               <div
@@ -162,6 +177,7 @@ function App() {
                   maxWidth: "85%",
                   [m.role === "model" ? "marginRight" : "marginLeft"]: "auto",
                 }}
+                className="message"
               >
                 <Message content={m.content} />
               </div>
@@ -195,6 +211,7 @@ function App() {
                 * * *
               </div>
             )}
+            <div className="invisible-message" />
           </div>
           <div className="input-container">
             <textarea

@@ -15,7 +15,7 @@ type Conn struct {
 func NewGraphConn() (*Conn, error) {
 	var (
 		Neo4jUrl  = os.Getenv("GO_NEO4J_URI")
-		Neo4jUser = os.Getenv("GO_NEO4J_USER")
+		Neo4jUser = os.Getenv("GO_NEO4J_USERNAME")
 		Neo4jPass = os.Getenv("GO_NEO4J_PASSWORD")
 	)
 

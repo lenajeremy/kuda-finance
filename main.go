@@ -19,6 +19,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/generative-ai-go/genai"
+	"github.com/joho/godotenv"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"gorm.io/gorm"
 )
 
@@ -26,13 +28,13 @@ import (
 var embeddedFiles embed.FS
 
 func init() {
-	// if err := godotenv.Load(); err != nil {
-	// 	panic("failed to load env")
-	// }
+	if err := godotenv.Load(); err != nil {
+		panic("failed to load env")
+	}
 
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
-		AddSource: true,
-		Level:     slog.LevelDebug,
+	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		// AddSource: true,
+		Level: slog.LevelDebug,
 	}))
 	slog.SetDefault(logger)
 }
@@ -69,7 +71,6 @@ func main() {
 	})
 
 	r.NoRoute(func(c *gin.Context) {
-		log.Println(c.Request.URL.Path)
 		if allowedURLs[c.Request.URL.Path] || strings.HasPrefix(c.Request.URL.Path, "/conversation") {
 			c.FileFromFS("/", httpFs)
 			return
@@ -135,7 +136,6 @@ func main() {
 	})
 
 	api.POST("/upload", func(c *gin.Context) {
-		println("HEllo")
 		form, err := c.MultipartForm()
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"status": 400, "error": "no file"})
@@ -201,11 +201,22 @@ func main() {
 		query := c.Query("query")
 		conversationId := c.Query("conversationId")
 
+		log.Println(query)
+
+		if query == "" {
+			slog.Error("no query provided")
+			c.JSON(http.StatusBadRequest, gin.H{
+				"response": nil,
+				"error":    "no query provided",
+			})
+			return
+		}
+
 		if conversationId == "" {
 			slog.Error("no conversation id provided")
 			c.JSON(http.StatusBadRequest, gin.H{
 				"response": nil,
-				"error":    fmt.Errorf("no conversation id provided"),
+				"error":    "no conversation id provided",
 			})
 			return
 		}
@@ -222,7 +233,8 @@ func main() {
 
 		res, err := conn.Execute(context.Background(), cypher, map[string]any{})
 		if err != nil {
-			panic(err)
+			slog.Error("error running query", "error", err.Error())
+			res = &neo4j.EagerResult{}
 		}
 
 		conversation := db.Conversation{}
