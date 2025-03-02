@@ -173,7 +173,7 @@ func saveTransaction(t *Transaction) error {
 	defer graphConn.Close()
 
 	query := `
-	MATCH (c:Category {name: $category})
+	MERGE (c:Category {name: $category})
 	CREATE (t:Transaction {dateTime: $dateTime, amount: $amount, type: $type, party: $party, description: $description, balance: $balance})
 	MERGE (t)-[:BELONGS_TO]->(c)
 	RETURN t`
@@ -188,12 +188,16 @@ func saveTransaction(t *Transaction) error {
 		"balance":     t.Balance,
 	}
 
-	fmt.Printf("%+v\n", params)
-
 	res, err := graphConn.Execute(context.Background(), query, params)
 	if err != nil {
 		return fmt.Errorf("failed to execute query: %s", err.Error())
 	}
-	fmt.Printf("res: %+v\n", res)
+
+	summary := res.Summary
+	counters := summary.Counters()
+	fmt.Println("Nodes created", counters.NodesCreated())
+	fmt.Println("Labels added", counters.LabelsAdded())
+	fmt.Println("Properties set:", counters.PropertiesSet())
+	fmt.Println("Relationships created", counters.RelationshipsCreated())
 	return nil
 }

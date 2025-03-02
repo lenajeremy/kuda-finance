@@ -47,18 +47,19 @@ the category of the transaction. If you fail at your task, you'd be sacked and y
 
 <RelevantContext>
 The user's name is Jeremiah Lena, he is based in Lagos, Nigeria.
-His girlfriend's name is X X.
+His girlfriend's name is Odeogberin Oluwadamilola.
 These are the names of his family members
- - X X
- - X X
- - X X
- - X X
+ - Marvelous Lena
+ - Margaret Lena
+ - Johnson Ojo Lena
+ - Esther Samuel
 
 The following people are food vendors
- - X X
- - X X
- - X X
- - X X (she sells only drinks)
+ - Joy Elu Odama
+ - Tobi Jaenette Loko
+ - Adebayo Tijani
+ - Mary Edet
+ - Ebere Florence Izuchukwu (she sells only drinks)
 </RelevantContext>
 
 It's your job to take a look at the details of the transaction, the date, the party, amount, description

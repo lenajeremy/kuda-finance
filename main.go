@@ -19,6 +19,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/generative-ai-go/genai"
+	"github.com/joho/godotenv"
 	"gorm.io/gorm"
 )
 
@@ -26,9 +27,9 @@ import (
 var embeddedFiles embed.FS
 
 func init() {
-	// if err := godotenv.Load(); err != nil {
-	// 	panic("failed to load env")
-	// }
+	if err := godotenv.Load(); err != nil {
+		panic("failed to load env")
+	}
 
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 		AddSource: true,
@@ -135,22 +136,17 @@ func main() {
 	})
 
 	api.POST("/upload", func(c *gin.Context) {
-		println("HEllo")
 		form, err := c.MultipartForm()
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"status": 400, "error": "no file"})
 			return
 		}
 
-		slog.Debug(fmt.Sprintf("%+v", form))
-
 		statementDocs, ok := form.File["statementDoc"]
 		if !ok || len(statementDocs) == 0 {
 			c.JSON(http.StatusBadRequest, gin.H{"status": 400, "error": "no file"})
 			return
 		}
-
-		slog.Debug(fmt.Sprintf("%+v", statementDocs[0].Header))
 
 		statementFile, err := statementDocs[0].Open()
 		if err != nil {
@@ -167,6 +163,7 @@ func main() {
 				totalIn += t.Amount
 			}
 		}
+
 		fmt.Printf("Total In: %f; Total Out: %f\n", totalIn, totalOut)
 
 		for _, t := range transactions {
@@ -181,9 +178,10 @@ func main() {
 				slog.Error("error: saving category", "transaction", t.String(), "error", err)
 				continue
 			}
-			time.Sleep(time.Millisecond * 500)
+			time.Sleep(time.Millisecond * 1000)
 		}
 
+		c.JSON(200, gin.H{"done": true})
 	})
 
 	api.POST("/chat/new", func(c *gin.Context) {

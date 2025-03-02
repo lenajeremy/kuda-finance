@@ -3,6 +3,7 @@ package graph
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"os"
 
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
@@ -15,11 +16,11 @@ type Conn struct {
 func NewGraphConn() (*Conn, error) {
 	var (
 		Neo4jUrl  = os.Getenv("GO_NEO4J_URI")
-		Neo4jUser = os.Getenv("GO_NEO4J_USER")
+		Neo4jUser = os.Getenv("GO_NEO4J_USERNAME")
 		Neo4jPass = os.Getenv("GO_NEO4J_PASSWORD")
 	)
 
-	fmt.Println(Neo4jUrl, Neo4jUser, Neo4jPass)
+	slog.Info(Neo4jUrl, Neo4jPass, Neo4jUser)
 
 	driver, err := neo4j.NewDriverWithContext(
 		Neo4jUrl,
